@@ -2,6 +2,7 @@
   "use strict";
 
   var dataElement = document.getElementById("protected-data");
+  var shell = document.querySelector(".gate-shell");
   var form = document.getElementById("gate-form");
   var input = document.getElementById("gate-password");
   var submit = document.getElementById("gate-submit");
@@ -9,6 +10,7 @@
   var storageKey = "relay-sim:access-password";
 
   if (!dataElement || !form || !input || !submit || !status) {
+    showGate();
     return;
   }
 
@@ -18,7 +20,14 @@
     payload = JSON.parse(dataElement.textContent);
   } catch (error) {
     setStatus("页面加密数据无效。", true);
+    showGate();
     return;
+  }
+
+  function showGate() {
+    if (shell) {
+      shell.classList.add("gate-visible");
+    }
   }
 
   function setStatus(message, isError) {
@@ -38,6 +47,7 @@
   }
 
   function showError(message) {
+    showGate();
     setStatus(message, true);
     submit.disabled = false;
     input.disabled = false;
@@ -144,6 +154,7 @@
   if (savedPassword) {
     unlock(savedPassword, true);
   } else {
+    showGate();
     input.focus();
   }
 })();

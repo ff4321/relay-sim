@@ -34,11 +34,16 @@ body {
 
 .gate-shell {
   width: min(420px, 100%);
+  visibility: hidden;
   background: var(--gate-panel);
   border: 1px solid var(--gate-border);
   border-radius: 12px;
   box-shadow: 0 12px 34px rgba(21, 63, 92, 0.12);
   overflow: hidden;
+}
+
+.gate-shell.gate-visible {
+  visibility: visible;
 }
 
 .gate-header {

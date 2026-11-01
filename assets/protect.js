@@ -6,6 +6,7 @@
   var input = document.getElementById("gate-password");
   var submit = document.getElementById("gate-submit");
   var status = document.getElementById("gate-status");
+  var storageKey = "relay-sim:access-password";
 
   if (!dataElement || !form || !input || !submit || !status) {
     return;
@@ -44,17 +45,31 @@
     input.select();
   }
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
+  function getSavedPassword() {
+    try {
+      return window.sessionStorage.getItem(storageKey);
+    } catch (error) {
+      return null;
+    }
+  }
 
-    var password = input.value;
-
-    if (!password) {
-      setStatus("请输入访问密码。", true);
-      input.focus();
+  function savePassword(password) {
+    try {
+      window.sessionStorage.setItem(storageKey, password);
+    } catch (error) {
       return;
     }
+  }
 
+  function clearSavedPassword() {
+    try {
+      window.sessionStorage.removeItem(storageKey);
+    } catch (error) {
+      return;
+    }
+  }
+
+  function unlock(password, isAutomatic) {
     submit.disabled = true;
     input.disabled = true;
     setStatus("正在解密页面…", false);
@@ -94,14 +109,41 @@
       })
       .then(function (decrypted) {
         var html = new TextDecoder().decode(decrypted);
+        savePassword(password);
         document.open();
         document.write(html);
         document.close();
       })
       .catch(function () {
+        if (isAutomatic) {
+          clearSavedPassword();
+          showError("保存的密码已失效，请重新输入。");
+          return;
+        }
+
         showError("密码不正确，或页面数据已损坏。");
       });
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    var password = input.value;
+
+    if (!password) {
+      setStatus("请输入访问密码。", true);
+      input.focus();
+      return;
+    }
+
+    unlock(password, false);
   });
 
-  input.focus();
+  var savedPassword = getSavedPassword();
+
+  if (savedPassword) {
+    unlock(savedPassword, true);
+  } else {
+    input.focus();
+  }
 })();
